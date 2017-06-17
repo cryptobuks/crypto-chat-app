@@ -4,11 +4,11 @@ socket.on("connect", function ()
     {
         console.log("Connected to server");
 
-        socket.emit("createMessage",
-            {
-                to: "aliceE",
-                text: "chat text alice"
-            });
+//        socket.emit("createMessage",
+//            {
+//                to: "aliceE",
+//                text: "chat text alice"
+//            });
     });
 
 socket.on("disconnect", function ()
