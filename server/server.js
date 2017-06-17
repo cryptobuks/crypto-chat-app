@@ -27,6 +27,11 @@ io.on("connection", (socket) =>
                     return callback("Name and room name are require.");
                 }
 
+                if(users.getUserList(params.room).includes(params.name))
+                {
+                    return callback("Username already taken in room.");
+                }
+
                 socket.join(params.room);
 
                 users.removeUser(socket.id);

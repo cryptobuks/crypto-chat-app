@@ -29,6 +29,7 @@ socket.on("connect", function ()
                     window.location.href = "/";
                 } else
                 {
+                    jQuery("#chat__room-name").text(params.room);
                     console.log("No error");
                 }
             });
