@@ -1,10 +1,11 @@
 var moment = require("moment");
 
-var generateMessage = (from, text) =>
+var generateMessage = (from, text, hmac) =>
 {
     return{
         from,
         text,
+        hmac,
         createdAt: moment().valueOf()
     };
 };

@@ -17,11 +17,34 @@ function scrollToBottom ()
     }
 };
 
+function encrypt_text(text)
+{
+    var key = _.pick(jQuery.deparam(window.location.search),"password").password;
+    var encrypted = CryptoJS.AES.encrypt(text,key).toString();
+    var HMAC = CryptoJS.HmacSHA512(encrypted,key).toString();
+    return [encrypted,HMAC];
+};
+
+function decrypt_text(ciphertext,hmac)
+{
+    var key = _.pick(jQuery.deparam(window.location.search),"password").password;
+    var HMAC= CryptoJS.HmacSHA512(ciphertext,key).toString();
+    if(HMAC === hmac)
+    {
+        return CryptoJS.AES.decrypt(ciphertext,key).toString(CryptoJS.enc.Utf8);
+    }
+    else
+    {
+        return ciphertext;
+    }
+};
+
 socket.on("connect", function ()
     {
         var params = jQuery.deparam(window.location.search);
+        var sel_params = _.pick(params,["name","room"])
 
-        socket.emit("join", params, function (err)
+        socket.emit("join", sel_params, function (err)
             {
                 if(err)
                 {
@@ -54,11 +77,19 @@ socket.on("updateUserList", function (users)
 
 socket.on("newMessage", function (message)
     {
+        var text;
+        if(message.from === "Admin")
+        {
+            text = message.text;
+        }else
+        {
+            text = decrypt_text(message.text,message.hmac);
+        }
         var formattedTime = moment(message.createdAt).format("h:mm a");
         var template = jQuery("#message-template").html();
         var html = Mustache.render(template,
             {
-                text:message.text,
+                text,
                 from:message.from,
                 createdAt:formattedTime
             });
@@ -85,15 +116,22 @@ jQuery("#message-form").on("submit", function (e)
     {
         e.preventDefault();
 
-        var messageTextbox = jQuery("[name=message]")
+        var messageTextbox = jQuery("[name=message]");
+        if(messageTextbox.val().trim().length > 0)
+        {
+            var encrypted = encrypt_text(messageTextbox.val());
+            var text = encrypted[0];
+            var hmac = encrypted[1];
 
-        socket.emit("createMessage",
-            {
-                text:messageTextbox.val()
-            }, function ()
-            {
-                messageTextbox.val("");
-            });
+            socket.emit("createMessage",
+                {
+                    text,
+                    hmac
+                }, function ()
+                {
+                    messageTextbox.val("");
+                });
+        };
     });
 
 var locationButton = jQuery("#send-location");

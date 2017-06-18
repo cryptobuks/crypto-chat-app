@@ -39,7 +39,7 @@ io.on("connection", (socket) =>
 
                 io.to(params.room).emit("updateUserList", users.getUserList(params.room));
 
-                socket.emit("newMessage", generateMessage("Admin","Welcome to the chat app"));
+                socket.emit("newMessage", generateMessage("Admin","Welcome to the chat app",""));
 
                 socket.broadcast.to(params.room).emit("newMessage", generateMessage("Admin", params.name + " joined."));
 
@@ -52,7 +52,7 @@ io.on("connection", (socket) =>
 
                 if(user && isRealString(newMessage.text))
                 {
-                    io.to(user.room).emit("newMessage", generateMessage(user.name,newMessage.text));
+                    io.to(user.room).emit("newMessage", generateMessage(user.name,newMessage.text, newMessage.hmac));
                 }
                 callback();
             });
@@ -74,7 +74,7 @@ io.on("connection", (socket) =>
                 if(user)
                 {
                     io.to(user.room).emit("updateUserList", users.getUserList(user.room));
-                    io.to(user.room).emit("newMessage", generateMessage("Admin", user.name + " has left."));
+                    io.to(user.room).emit("newMessage", generateMessage("Admin", user.name + " has left.",""));
                 }
                 console.log("User disconnected");
             });
